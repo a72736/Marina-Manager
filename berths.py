@@ -58,4 +58,17 @@ class BerthManager:
                 berth["status"] = "LIVRE"
         return True
 
+    def update_berth_maintenance(self, berth_id: str, in_maintenance: bool) -> bool:
+        """Altera o estado do posto para manutenção ou liberta-o (Update)."""
+        berth = self.get_berth(berth_id)
+        if not berth:
+            raise KeyError(f"Posto {berth_id} não encontrado.")
+        if in_maintenance:
+            if berth["status"] == "OCUPADA":
+                raise PermissionError("Não é possível colocar em manutenção um posto com barco atracado.")
+            berth["status"] = "MANUTENCAO"
+        else:
+            if berth["status"] == "MANUTENCAO":
+                berth["status"] = "LIVRE"
+        return True
     
