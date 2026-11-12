@@ -27,7 +27,9 @@ class VesselManager:
             "name": name.strip(),
             "type": vessel_type.strip(),
             "length": float(length),
-            "draft": float(draft)
+            "draft": float(draft),
+            "owner": owner.strip(),
+            "contact": contact.strip()
         }
         
         return True
