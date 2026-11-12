@@ -71,4 +71,16 @@ class BerthManager:
             if berth["status"] == "MANUTENCAO":
                 berth["status"] = "LIVRE"
         return True
-    
+
+
+    def delete_berth(self, berth_id: str) -> bool:
+        """Remove um posto de amarração do inventário (Delete)."""
+        berth_id = berth_id.strip().upper()
+        berth = self.get_berth(berth_id)
+        if not berth:
+            raise KeyError(f"Posto {berth_id} não encontrado.")
+        if berth["status"] == "OCUPADA":
+            raise PermissionError("Não é possível eliminar um posto ocupado por uma embarcação.")
+
+        del self.berths[berth_id]
+        return True
