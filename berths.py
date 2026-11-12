@@ -88,6 +88,7 @@ class BerthManager:
     def find_suitable_berth(self, length: float, draft: float) -> Optional[dict]:
         """Algoritmo de alocação: devolve a primeira vaga livre compatível com as cotas."""
         for berth in sorted(self.berths.values(), key=lambda b: b["max_length"]):
-        if berth["status"] == "LIVRE":
-            if berth["max_length"] >= length and berth["max_draft"] >= draft:
-                return berth
+            if berth["status"] == "LIVRE":
+                if berth["max_length"] >= length and berth["max_draft"] >= draft:
+                    return berth
+        return None
