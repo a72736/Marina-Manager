@@ -28,3 +28,18 @@ class BerthManager:
             "current_vessel": None
         }
         return True
+
+    def get_berth(self, berth_id: str) -> Optional[dict]:
+        """Consulta um posto de amarração específico (Read individual)."""
+        return self.berths.get(berth_id.strip().upper())
+
+    def list_berths(self, pontoon_filter: Optional[str] = None, status_filter: Optional[str] = None) -> List[dict]:
+        """Lista os postos com opções de filtro por pontão ou estado (Read com filtro)."""
+        results = list(self.berths.values())
+        if pontoon_filter:
+            p_prefix = pontoon_filter.strip().upper()
+            results = [b for b in results if b["berth_id"].startswith(p_prefix)]
+        if status_filter:
+            s_val = status_filter.strip().upper()
+            results = [b for b in results if b["status"] == s_val]
+        return results
