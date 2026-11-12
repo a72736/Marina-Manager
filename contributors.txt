@@ -1,4 +1,8 @@
 Hugo Coelho <a72736@ualg.pt>
+<<<<<<< HEAD
+João Gabriel <a61640@ualg.pt>
+=======
 João Gabriel <a61640@ualg.pt>
 Marisa Silvério <a94136@ualg.pt>
 Rafael Coelho <a61642@ualg.pt>
+>>>>>>> f5de3bbd5f6f9e34ba9482f66e315656f6f76782
