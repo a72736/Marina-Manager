@@ -56,3 +56,38 @@ class StayManager:
         return list(self.stays.values())
 
     
+    def update_stay_duration(self, stay_id: str, additional_days: int) -> bool:
+        """Prorroga o número de dias de estadia (Update)."""
+        stay = self.stays.get(stay_id)
+        if not stay:
+            raise KeyError(f"Estadia {stay_id} não encontrada.")
+        if stay["status"] != "ATIVA":
+            raise ValueError("Apenas estadias ativas podem ser prolongadas.")
+        if additional_days <= 0:
+            raise ValueError("Os dias adicionais devem ser superiores a 0.")
+
+        stay["planned_days"] += additional_days
+        return True
+
+    def checkout_stay(self, stay_id: str, vessel_length: float, actual_days: Optional[int] = None) -> float:
+        """Conclui a estadia e apura a fatura total (Update de fecho / fecho de ciclo)."""
+        stay = self.stays.get(stay_id)
+        if not stay:
+            raise KeyError(f"Estadia {stay_id} não encontrada.")
+        if stay["status"] != "ATIVA":
+            raise ValueError("Esta estadia já foi finalizada anteriormente.")
+
+        days = actual_days if actual_days is not None else stay["planned_days"]
+        if days < 1:
+            days = 1
+
+        cost = days * (vessel_length * self.DAILY_RATE_PER_METER)
+        if stay["use_water"]:
+            cost += days * self.WATER_FEE_PER_DAY
+        if stay["use_power"]:
+            cost += days * self.POWER_FEE_PER_DAY
+
+        stay["status"] = "CONCLUIDA"
+        stay["check_out_date"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        stay["total_cost"] = round(cost, 2)
+        return stay["total_cost"]
