@@ -33,3 +33,10 @@ class VesselManager:
         }
         
         return True
+
+
+
+    def get_vessel(self, reg_num: str) -> Optional[dict]:
+        """Obtém os detalhes de uma embarcação pelo registo (Read individual)."""
+        return self.vessels.get(reg_num.strip().upper())
+    
