@@ -39,4 +39,16 @@ class VesselManager:
     def get_vessel(self, reg_num: str) -> Optional[dict]:
         """Obtém os detalhes de uma embarcação pelo registo (Read individual)."""
         return self.vessels.get(reg_num.strip().upper())
+
+
     
+    def list_vessels(self, search_term: Optional[str] = None) -> List[dict]:
+        """Lista todas as embarcações ou filtra por termo de pesquisa (Read com filtro)."""
+        if not search_term:
+            return list(self.vessels.values())
+
+        term = search_term.strip().lower()
+        return [
+            v for v in self.vessels.values()
+            if term in v["name"].lower() or term in v["reg_num"].lower() or term in v["owner"].lower()
+        ]
