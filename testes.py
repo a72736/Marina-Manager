@@ -10,3 +10,11 @@ class TestRegrasNegocioMarina(unittest.TestCase):
         dias = 3
         tarifa_diaria = 25.0
         self.assertEqual(dias * tarifa_diaria, 75.0)
+
+    def test_validacao_comprimento_invalido(self):
+        comprimento_barco = 18.5
+        limite_pontao = 15.0
+        self.assertFalse(comprimento_barco <= limite_pontao)
+
+if __name__ == "__main__":
+    unittest.main()
