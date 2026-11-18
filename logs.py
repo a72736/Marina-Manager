@@ -7,8 +7,8 @@ def configurar_logger(ficheiro_log: str = "marina_audit.log") -> logging.Logger:
 
     if not logger.handlers:
         handler = logging.FileHandler(ficheiro_log, encoding="utf-8")
-        formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s", "%Y-%m-%d %H:%M:%S")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
-    
+    return logger
