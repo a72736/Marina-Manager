@@ -48,7 +48,9 @@ class VesselManager:
         """Atualiza os dados de uma embarcação existente (Update)."""
         vessel = self.get_vessel(reg_num)
 
-        
+        if not vessel:
+            raise KeyError(f"Embarcação {reg_num} não encontrada.")
+
         if name is not None and name.strip():
             vessel["name"] = name.strip()
         if vessel_type is not None and vessel_type.strip():
