@@ -43,3 +43,22 @@ def gerar_relatorio_financeiro(stays: Dict[str, dict]) -> str:
         "==================================="
     ]
     return "\n".join(linhas)
+
+
+def gerar_relatorio_alertas(stays: Dict[str, dict], limite_dias: int = 7) -> str:
+    """Identifica estadias ativas que ultrapassam o limite padrão de permanência."""
+    alertas = []
+    for stay_id, dados in stays.items():
+        if dados.get("status") == "ATIVA":
+            dias = int(dados.get("dias_decorridos", 0))
+            if dias >= limite_dias:
+                vessel = dados.get("vessel_id", "Desconhecida")
+                berth = dados.get("berth_id", "N/A")
+                alertas.append(f"  - [{stay_id}] Embarcação {vessel} no posto {berth} ({dias} dias)")
+
+    if not alertas:
+        return "\n=== ALERTAS OPERACIONAIS ===\nSem estadias prolongadas ou alertas ativos.\n============================"
+
+    cabecalho = f"\n=== ALERTAS OPERACIONAIS (>= {limite_dias} DIAS) ==="
+    rodape = "=" * len(cabecalho.strip())
+    return "\n".join([cabecalho] + alertas + [rodape])
