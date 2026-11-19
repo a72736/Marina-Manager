@@ -42,6 +42,33 @@ class VesselManager:
 
 
     
+    def update_vessel(self, reg_num: str, name: Optional[str] = None, vessel_type: Optional[str] = None,
+                      length: Optional[float] = None, draft: Optional[float] = None,
+                      owner: Optional[str] = None, contact: Optional[str] = None) -> bool:
+        """Atualiza os dados de uma embarcação existente (Update)."""
+        vessel = self.get_vessel(reg_num)
+
+        if not vessel:
+            raise KeyError(f"Embarcação {reg_num} não encontrada.")
+
+        if name is not None and name.strip():
+            vessel["name"] = name.strip()
+        if vessel_type is not None and vessel_type.strip():
+            vessel["type"] = vessel_type.strip()
+        if length is not None:
+            if length <= 0:
+                raise ValueError("O comprimento deve ser maior que zero.")
+            vessel["length"] = float(length)
+        if draft is not None:
+            if draft <= 0:
+                raise ValueError("O calado deve ser maior que zero.")
+            vessel["draft"] = float(draft)
+        if owner is not None and owner.strip():
+            vessel["owner"] = owner.strip()
+        if contact is not None and contact.strip():
+            vessel["contact"] = contact.strip()
+
+        return True
     def list_vessels(self, search_term: Optional[str] = None) -> List[dict]:
         """Lista todas as embarcações ou filtra por termo de pesquisa (Read com filtro)."""
         if not search_term:
