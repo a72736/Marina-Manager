@@ -79,3 +79,17 @@ class VesselManager:
             v for v in self.vessels.values()
             if term in v["name"].lower() or term in v["reg_num"].lower() or term in v["owner"].lower()
         ]
+
+
+
+    
+    def delete_vessel(self, reg_num: str, is_berthed: bool = False) -> bool:
+        """Remove o registo de uma embarcação se não estiver atualmente amarrada (Delete)."""
+        reg_num = reg_num.strip().upper()
+        if reg_num not in self.vessels:
+            raise KeyError(f"Embarcação {reg_num} não encontrada.")
+        if is_berthed:
+            raise PermissionError("Não é permitido remover uma embarcação com amarração/estadia ativa.")
+
+        del self.vessels[reg_num]
+        return True
