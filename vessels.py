@@ -69,3 +69,13 @@ class VesselManager:
             vessel["contact"] = contact.strip()
 
         return True
+    def list_vessels(self, search_term: Optional[str] = None) -> List[dict]:
+        """Lista todas as embarcações ou filtra por termo de pesquisa (Read com filtro)."""
+        if not search_term:
+            return list(self.vessels.values())
+
+        term = search_term.strip().lower()
+        return [
+            v for v in self.vessels.values()
+            if term in v["name"].lower() or term in v["reg_num"].lower() or term in v["owner"].lower()
+        ]
