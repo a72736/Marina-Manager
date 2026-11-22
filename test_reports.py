@@ -1,15 +1,19 @@
 """
 Módulo: test_reports.py
-Descrição: Testes unitários para validar os cálculos dos relatórios operacionais e financeiros.
+Descrição: Testes unitários para validar os cálculos dos relatórios operacionais, financeiros e alertas.
 Autor: Rafael Coelho
 """
 
 import unittest
-from reports import gerar_relatorio_ocupacao, gerar_relatorio_financeiro
+from reports import (
+    gerar_relatorio_ocupacao,
+    gerar_relatorio_financeiro,
+    gerar_relatorio_alertas,
+)
 
 
 class TestReports(unittest.TestCase):
-    """Testes às funções de relatórios de ocupação e faturação."""
+    """Testes às funções de relatórios de ocupação, faturação e alertas."""
 
     def test_relatorio_ocupacao_vazio(self):
         res = gerar_relatorio_ocupacao({})
@@ -38,6 +42,15 @@ class TestReports(unittest.TestCase):
         self.assertIn("Estadias Ativas no Cais: 1", res)
         self.assertIn("Estadias Concluídas:     2", res)
         self.assertIn("Receita Total Faturada:  145.50 EUR", res)
+
+    def test_relatorio_alertas(self):
+        stays_mock = {
+            "STAY-0010": {"status": "ATIVA", "dias_decorridos": 10, "vessel_id": "PT-99", "berth_id": "A-04"},
+            "STAY-0011": {"status": "ATIVA", "dias_decorridos": 2, "vessel_id": "PT-12", "berth_id": "B-01"},
+        }
+        res = gerar_relatorio_alertas(stays_mock, limite_dias=7)
+        self.assertIn("STAY-0010", res)
+        self.assertNotIn("STAY-0011", res)
 
 
 if __name__ == "__main__":
