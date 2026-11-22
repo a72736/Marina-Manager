@@ -1,7 +1,3 @@
-"""
-Módulo Principal: main.py
-Descrição: Interface de consola de texto (CLI puro) do sistema MarinaManager.
-"""
 
 import sys
 from vessels import VesselManager
