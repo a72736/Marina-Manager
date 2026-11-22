@@ -1,34 +1,44 @@
+"""
 Módulo Principal: main.py
-
+Descrição: Interface de consola de texto (CLI puro) do sistema MarinaManager.
+"""
 
 import sys
 from vessels import VesselManager
 from berths import BerthManager
 from stays import StayManager
 from storage import save_database, load_database
+from reports import (
+    gerar_relatorio_ocupacao,
+    gerar_relatorio_financeiro,
+    gerar_relatorio_alertas,
+)
+
+try:
+    from backups import criar_backup
+except ImportError:
+    criar_backup = None
 
 
-def seed_sample_data(vm: VesselManager, bm: BerthManager):
+def seed_sample_data(vn: VesselManager, bm: BerthManager):
     """Inicializa postos e barcos de exemplo caso a base de dados esteja limpa."""
     if not bm.berths:
         bm.create_berth("A-01", max_length=10.0, max_draft=2.5, has_water=True, has_electricity=True)
         bm.create_berth("A-02", max_length=12.5, max_draft=3.0, has_water=True, has_electricity=True)
         bm.create_berth("B-01", max_length=15.0, max_draft=3.5, has_water=True, has_electricity=False)
         bm.create_berth("B-02", max_length=8.0, max_draft=1.8, has_water=False, has_electricity=False)
-    if not vm.vessels:
-        vm.create_vessel("PT-1001-L", "Santa Maria", "Veleiro", length=11.2, draft=2.1, owner="Manuel Silva", contact="910000001")
-        vm.create_vessel("PT-2004-F", "Oceano Azul", "Lancha Rápida", length=7.5, draft=1.2, owner="Ana Costa", contact="920000002")
+    if not vn.vessels:
+        vn.create_vessel("PT-1001-L", "Santa Maria", "Veleiro", length=11.2, draft=2.1, owner="Manuel Silva", contact="910000001")
+        vn.create_vessel("PT-2004-F", "Oceano Azul", "Lancha Rápida", length=7.5, draft=1.2, owner="Ana Costa", contact="920000002")
 
 
 def print_banner():
+    print("\n" + "=" * 60)
+    print("          MARINAMANAGER CLI - GESTAO DE MARINAS")
     print("=" * 60)
-    print("         MARINAMANAGER CLI - GESTAO DE MARINAS")
-    print("=" * 60)
 
 
-
-
-def menu_vessels(vm: VesselManager, sm: StayManager):
+def menu_vessels(vn: VesselManager, sm: StayManager):
     while True:
         print("\n--- MENU: GESTAO DE EMBARCACOES (CRUD) ---")
         print("1. Registar nova embarcacao (Create)")
@@ -48,13 +58,13 @@ def menu_vessels(vm: VesselManager, sm: StayManager):
                 calado = float(input("Calado (m): ").strip())
                 dono = input("Nome do Proprietario: ").strip()
                 contacto = input("Contacto telefonico: ").strip()
-                vm.create_vessel(reg, nome, tipo, comp, calado, dono, contacto)
+                vn.create_vessel(reg, nome, tipo, comp, calado, dono, contacto)
                 print(f"[OK] Embarcacao '{nome}' ({reg}) registada com sucesso.")
             except Exception as e:
                 print(f"[ERRO] Falha ao registar: {e}")
 
         elif opcao == "2":
-            barcos = vm.list_vessels()
+            barcos = vn.list_vessels()
             if not barcos:
                 print("Nenhuma embarcacao registada.")
             else:
@@ -65,7 +75,7 @@ def menu_vessels(vm: VesselManager, sm: StayManager):
 
         elif opcao == "3":
             termo = input("Termo de pesquisa: ").strip()
-            res = vm.list_vessels(search_term=termo)
+            res = vn.list_vessels(search_term=termo)
             if not res:
                 print(f"Nenhum barco corresponde a '{termo}'.")
             else:
@@ -74,7 +84,7 @@ def menu_vessels(vm: VesselManager, sm: StayManager):
 
         elif opcao == "4":
             reg = input("Matricula do barco a atualizar: ").strip()
-            if not vm.get_vessel(reg):
+            if not vn.get_vessel(reg):
                 print("[ERRO] Barco nao encontrado.")
                 continue
             print("Deixe em branco os campos que nao deseja alterar.")
@@ -83,7 +93,7 @@ def menu_vessels(vm: VesselManager, sm: StayManager):
             n_dono = input("Novo Dono: ").strip() or None
             n_cont = input("Novo Contacto: ").strip() or None
             try:
-                vm.update_vessel(reg, name=n_nome, vessel_type=n_tipo, owner=n_dono, contact=n_cont)
+                vn.update_vessel(reg, name=n_nome, vessel_type=n_tipo, owner=n_dono, contact=n_cont)
                 print("[OK] Embarcacao atualizada com sucesso.")
             except Exception as e:
                 print(f"[ERRO] {e}")
@@ -92,7 +102,7 @@ def menu_vessels(vm: VesselManager, sm: StayManager):
             reg = input("Matricula do barco a remover: ").strip()
             is_active = sm.get_active_stay_for_vessel(reg) is not None
             try:
-                vm.delete_vessel(reg, is_berthed=is_active)
+                vn.delete_vessel(reg, is_berthed=is_active)
                 print(f"[OK] Embarcacao {reg} removida com sucesso.")
             except Exception as e:
                 print(f"[ERRO] {e}")
@@ -167,7 +177,7 @@ def menu_berths(bm: BerthManager):
             print("Opcao invalida.")
 
 
-def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
+def menu_stays(vn: VesselManager, bm: BerthManager, sm: StayManager):
     while True:
         print("\n--- MENU: CONTROLO DE TRAFEGO E ESTADIAS ---")
         print("1. Check-in de embarcacao (Alocacao automatica)")
@@ -179,7 +189,7 @@ def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
 
         if opcao == "1":
             reg = input("Matricula do barco para check-in: ").strip().upper()
-            barco = vm.get_vessel(reg)
+            barco = vn.get_vessel(reg)
             if not barco:
                 print("[ERRO] Barco nao registado. Cadastre-o primeiro no Menu de Embarcacoes.")
                 continue
@@ -193,7 +203,7 @@ def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
                 continue
 
             print(f"[SUGESTAO] Vaga compativel encontrada: {vaga['berth_id']} (Max: {vaga['max_length']}m)")
-            confirma = input("Confirmar amarração neste posto? (s/n): ").strip().lower()
+            confirma = input("Confirmar amarracao neste posto? (s/n): ").strip().lower()
             if confirma == "s":
                 try:
                     dias = int(input("Numero de dias previstos de permanencia: ").strip())
@@ -221,11 +231,11 @@ def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
             if not stay:
                 print("[ERRO] Nao existe estadia ativa para esse barco.")
                 continue
-            barco = vm.get_vessel(reg)
+            barco = vn.get_vessel(reg)
             try:
                 total = sm.checkout_stay(stay["stay_id"], barco["length"])
                 bm.set_berth_occupancy(stay["berth_id"], None)
-                print(f"\n--- FATURA DE CHECK-OUT ---")
+                print("\n--- FATURA DE CHECK-OUT ---")
                 print(f"Embarcacao: {barco['name']} ({reg})")
                 print(f"Posto desocupado: {stay['berth_id']}")
                 print(f"Total a liquidar: {total:.2f} EUR")
@@ -237,7 +247,7 @@ def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
             reg = input("Matricula do barco: ").strip().upper()
             stay = sm.get_active_stay_for_vessel(reg)
             if not stay:
-                print("[ERRO] Nao ha estadia ativa para esta matricula.")
+                print("[ERRO] Nao existe estadia ativa para esta matricula.")
                 continue
             try:
                 dias = int(input("Quantos dias adicionais deseja acrescentar? ").strip())
@@ -252,39 +262,79 @@ def menu_stays(vm: VesselManager, bm: BerthManager, sm: StayManager):
             print("Opcao invalida.")
 
 
+def menu_relatorios(bm: BerthManager, sm: StayManager):
+    while True:
+        print("\n--- RELATORIOS E ESTATISTICAS ---")
+        print("1. Taxa de Ocupacao dos Pontoes")
+        print("2. Resumo Financeiro e Trafego")
+        print("3. Alertas de Estadias Prolongadas")
+        print("0. Voltar ao menu principal")
+        op = input("Opcao: ").strip()
+
+        if op == "1":
+            print(gerar_relatorio_ocupacao(bm.berths))
+        elif op == "2":
+            print(gerar_relatorio_financeiro(sm.stays))
+        elif op == "3":
+            print(gerar_relatorio_alertas(sm.stays))
+        elif op == "0":
+            break
+        else:
+            print("Opcao invalida.")
+
+
 def main():
     vessels_data, berths_data, stays_data = load_database()
-    vm = VesselManager(vessels_data)
+    vn = VesselManager(vessels_data)
     bm = BerthManager(berths_data)
     sm = StayManager(stays_data)
 
-    seed_sample_data(vm, bm)
+    seed_sample_data(vn, bm)
 
-    while True:
-        print_banner()
-        print("1. Gestao de Embarcacoes (CRUD Barcos)")
-        print("2. Gestao de Pontoes e Vagas (CRUD Postos)")
-        print("3. Controlo de Trafego e Estadias (Check-in/Check-out)")
-        print("4. Guardar Dados em Disco")
-        print("0. Gravar e Sair")
-        print("=" * 60)
-        escolha = input("Selecione uma opcao: ").strip()
+    try:
+        while True:
+            print_banner()
+            print("1. Gestao de Embarcacoes (CRUD Barcos)")
+            print("2. Gestao de Pontoes e Vagas (CRUD Postos)")
+            print("3. Controlo de Trafego e Estadias (Check-in/Check-out)")
+            print("4. Relatorios e Estatisticas")
+            print("5. Guardar Dados em Disco")
+            print("6. Criar Backup de Seguranca")
+            print("0. Gravar e Sair")
+            print("=" * 60)
+            escolha = input("Selecione uma opcao: ").strip()
 
-        if escolha == "1":
-            menu_vessels(vm, sm)
-        elif escolha == "2":
-            menu_berths(bm)
-        elif escolha == "3":
-            menu_stays(vm, bm, sm)
-        elif escolha == "4":
-            save_database(vm.vessels, bm.berths, sm.stays)
-            print("[OK] Dados gravados com sucesso em 'marina_data.json'.")
-        elif escolha == "0":
-            save_database(vm.vessels, bm.berths, sm.stays)
-            print("A gravar alteracoes... Ate a proxima!")
-            sys.exit(0)
-        else:
-            print("Opcao invalida. Prima ENTER para continuar...")
+            if escolha == "1":
+                menu_vessels(vn, sm)
+            elif escolha == "2":
+                menu_berths(bm)
+            elif escolha == "3":
+                menu_stays(vn, bm, sm)
+            elif escolha == "4":
+                menu_relatorios(bm, sm)
+            elif escolha == "5":
+                save_database(vn.vessels, bm.berths, sm.stays)
+                print("[OK] Dados gravados com sucesso em 'marina_data.json'.")
+            elif escolha == "6":
+                save_database(vn.vessels, bm.berths, sm.stays)
+                if criar_backup:
+                    try:
+                        destino = criar_backup()
+                        print(f"[OK] Backup criado com sucesso em: {destino}")
+                    except Exception as e:
+                        print(f"[ERRO] Falha ao criar backup: {e}")
+                else:
+                    print("[AVISO] Modulo de backups nao disponivel.")
+            elif escolha == "0":
+                save_database(vn.vessels, bm.berths, sm.stays)
+                print("A gravar alteracoes... Ate a proxima!")
+                sys.exit(0)
+            else:
+                print("Opcao invalida. Prima ENTER para continuar...")
+    except KeyboardInterrupt:
+        save_database(vn.vessels, bm.berths, sm.stays)
+        print("\n[INFO] Execucao interrompida. Alteracoes gravadas de forma segura.")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
