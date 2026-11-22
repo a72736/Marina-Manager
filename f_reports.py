@@ -36,6 +36,7 @@ class ReportManager:
         for stay in self.stays:
             if stay.get("ativa") and stay.get("data_saida_prevista", "9999-12-31") < hoje:
                 atrasadas.append(stay)
+        return atrasadas
         
 
 
